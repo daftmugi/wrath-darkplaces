@@ -2206,7 +2206,7 @@ void VM_rmtree(prvm_prog_t *prog)
 	if (dpsnprintf(vabuf, sizeof(vabuf), "%s/data/%s", fs_gamedir, fname) >= (int)sizeof(vabuf))
 	{
 		PRVM_G_FLOAT(OFS_RETURN) = -2;
-		VM_Warning(prog, "VM_fremove: %s rejects path %s as too long\n", prog->name, vabuf);
+		VM_Warning(prog, "VM_rmtree: %s rejects path %s as too long\n", prog->name, vabuf);
 		return;
 	}
 
