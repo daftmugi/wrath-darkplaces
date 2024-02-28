@@ -679,6 +679,10 @@ Interactive line editing and console scrollback
 static void
 Key_Console (int key, int unicode)
 {
+	// hack to fix ` as the first char on the edit line, when toggleconsole from the main menu
+	if (key == '`' || unicode == '`')
+		return;
+
 	// LordHavoc: copied most of this from Q2 to improve keyboard handling
 	switch (key)
 	{
@@ -1939,6 +1943,11 @@ Key_Event (int key, int ascii, qboolean down)
 		// (special exemption for german keyboard layouts)
 		if (con_closeontoggleconsole.integer && bind && !strncmp(bind, "toggleconsole", strlen("toggleconsole")) && (key_consoleactive & KEY_CONSOLEACTIVE_USER) && (con_closeontoggleconsole.integer >= ((ascii != STRING_COLOR_TAG) ? 2 : 3) || key_linepos == 1))
 		{
+			// clear line
+			key_line[0] = ']';
+			key_line[1] = 0;
+			key_linepos = 1;
+
 			Con_ToggleConsole_f ();
 			return;
 		}
