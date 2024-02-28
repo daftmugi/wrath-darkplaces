@@ -497,4 +497,7 @@ void VM_fremove(prvm_prog_t *prog);
 void VM_fexists(prvm_prog_t *prog);
 void VM_rmtree(prvm_prog_t *prog);
 
+// EXT_DAFTMUGI
+void VM_sync_file(prvm_prog_t *prog);
+
 #endif

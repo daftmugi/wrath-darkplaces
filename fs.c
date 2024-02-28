@@ -3385,6 +3385,35 @@ qboolean FS_SysFileExists (const char *path)
 	return FS_SysFileType (path) != FS_FILETYPE_NONE;
 }
 
+qboolean FS_SysMtimeEqual (const char *path1, const char *path2)
+{
+	struct stat file1, file2;
+
+	if (!!stat(path1, &file1))
+		return false;
+	if (!!stat(path2, &file2))
+		return false;
+
+	return file1.st_mtime == file2.st_mtime;
+}
+
+void FS_CopyMtime (const char *path1, const char *path2)
+{
+	struct stat file1, file2;
+	struct timespec times[2];
+
+	if (!!stat(path1, &file1))
+		return;
+	if (!!stat(path2, &file2))
+		return;
+
+	times[0].tv_sec = 0;
+	times[0].tv_nsec = UTIME_OMIT;
+	times[1] = file1.st_mtim;
+
+	utimensat(AT_FDCWD, path2, times, 0);
+}
+
 void FS_mkdir (const char *path)
 {
 	if(COM_CheckParm("-readonly"))

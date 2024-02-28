@@ -38,6 +38,7 @@ cvar_t prvm_statementprofiling = {0, "prvm_statementprofiling", "0", "counts how
 cvar_t prvm_timeprofiling = {0, "prvm_timeprofiling", "0", "counts how long each function has been executed, these counts are displayed in prvm_profile output (if enabled)"};
 cvar_t prvm_coverage = {0, "prvm_coverage", "0", "report and count coverage events (1: per-function, 2: coverage() builtin, 4: per-statement)"};
 cvar_t prvm_backtraceforwarnings = {0, "prvm_backtraceforwarnings", "0", "print a backtrace for warnings too"};
+cvar_t prvm_printsyncfile = {0, "prvm_printsyncfile", "0", "print sync info to the console"};
 cvar_t prvm_leaktest = {0, "prvm_leaktest", "0", "try to detect memory leaks in strings or entities"};
 cvar_t prvm_leaktest_ignore_classnames = {0, "prvm_leaktest_ignore_classnames", "", "classnames of entities to NOT leak check because they are found by find(world, classname, ...) but are actually spawned by QC code (NOT map entities)"};
 cvar_t prvm_errordump = {0, "prvm_errordump", "0", "write a savegame on crash to crash-server.dmp"};
@@ -2920,6 +2921,7 @@ void PRVM_Init (void)
 	Cvar_RegisterVariable (&prvm_timeprofiling);
 	Cvar_RegisterVariable (&prvm_coverage);
 	Cvar_RegisterVariable (&prvm_backtraceforwarnings);
+	Cvar_RegisterVariable (&prvm_printsyncfile);
 	Cvar_RegisterVariable (&prvm_leaktest);
 	Cvar_RegisterVariable (&prvm_leaktest_ignore_classnames);
 	Cvar_RegisterVariable (&prvm_errordump);

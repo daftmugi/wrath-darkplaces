@@ -129,6 +129,8 @@ int FS_SysFileType (const char *filename);		// only look for files outside of pa
 
 qboolean FS_FileExists (const char *filename);		// the file can be into a package
 qboolean FS_SysFileExists (const char *filename);	// only look for files outside of packages
+qboolean FS_SysMtimeEqual (const char *path1, const char *path2);
+void FS_CopyMtime (const char *path1, const char *path2);
 
 void FS_mkdir (const char *path);
 

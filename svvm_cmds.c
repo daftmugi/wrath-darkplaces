@@ -4380,7 +4380,7 @@ NULL,						// #666
 NULL,						// #667
 NULL,						// #668
 NULL,						// #669
-NULL,						// #670
+VM_sync_file,				// #670 float(string file1, string file2) sync_file (EXT_DAFTMUGI)
 NULL,						// #671
 NULL,						// #672
 NULL,						// #673

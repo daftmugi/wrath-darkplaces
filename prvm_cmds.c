@@ -17,6 +17,7 @@
 #include "mdfour.h"
 
 extern cvar_t prvm_backtraceforwarnings;
+extern cvar_t prvm_printsyncfile;
 #ifdef USEODE
 extern dllhandle_t ode_dll;
 #endif
@@ -2211,6 +2212,112 @@ void VM_rmtree(prvm_prog_t *prog)
 	}
 
 	PRVM_G_FLOAT(OFS_RETURN) = FS_rmtree(vabuf);
+}
+
+/*
+=========
+VM_sync_file
+
+float	sync_file(string file1, string file2)
+=========
+*/
+// float(string file1, string file2) sync_file = #670;
+// smart syncs file from quake/gamedir/$fname1 to $fname2
+// returns 0 on success, <0 on failure
+void VM_sync_file(prvm_prog_t *prog)
+{
+	const char *fname1, *fname2;
+	char game_path1[1024] = { 0 };
+	char game_path2[1024] = { 0 };
+	char data_path1[1024] = { 0 };
+	char data_path2[1024] = { 0 };
+	int err = 0;
+	char fbuf[VM_STRINGTEMP_LENGTH];
+	qfile_t *f1, *f2;
+	fs_offset_t rx = 0, wx = 0;
+
+	VM_SAFEPARMCOUNT(2, VM_sync_file);
+	fname1 = PRVM_G_STRING(OFS_PARM0);
+	fname2 = PRVM_G_STRING(OFS_PARM1);
+	PRVM_G_FLOAT(OFS_RETURN) = 0;
+
+	if (FS_CheckNastyPath(fname1, true)) {
+		PRVM_G_FLOAT(OFS_RETURN) = -1;
+		VM_Warning(prog, "VM_sync_file: %s rejects nasty path %s\n", prog->name, game_path1);
+		return;
+	}
+
+	if (FS_CheckNastyPath(fname2, true)) {
+		PRVM_G_FLOAT(OFS_RETURN) = -2;
+		VM_Warning(prog, "VM_sync_file: %s rejects nasty path %s\n", prog->name, game_path2);
+		return;
+	}
+
+	dpsnprintf(data_path1, sizeof(data_path1), "data/%s", fname1);
+	dpsnprintf(data_path2, sizeof(data_path2), "data/%s", fname2);
+	dpsnprintf(game_path1, sizeof(game_path1), "%s/%s", fs_gamedir, data_path1);
+	dpsnprintf(game_path2, sizeof(game_path2), "%s/%s", fs_gamedir, data_path2);
+
+	// Do not copy the source file if it does not exist.
+	if (!FS_SysFileExists(game_path1)) {
+		// Delete the destination file if it exists.
+		if (FS_SysFileExists(game_path2)) {
+			if ((err = remove(game_path2)) != 0) {
+				PRVM_G_FLOAT(OFS_RETURN) = -3;
+				VM_Warning(prog, "VM_sync_file: %s could not remove %s\n", prog->name, game_path2);
+			}
+			if (prvm_printsyncfile.integer > 0) {
+				Con_Printf("VM_sync_file: delete\n  from: %s\n    to: %s\n", "(no file)", data_path2);
+			}
+		}
+		return;
+	}
+
+	// Files are equivalent, so do not overwrite.
+	if (FS_SysMtimeEqual(game_path1, game_path2)) {
+		if (prvm_printsyncfile.integer > 0) {
+			Con_Printf("VM_sync_file: skip\n  from: %s\n    to: %s\n", data_path1, data_path2);
+		}
+		return;
+	}
+
+	if (prvm_printsyncfile.integer > 0) {
+		Con_Printf("VM_sync_file: copy\n  from: %s\n    to: %s\n", data_path1, data_path2);
+	}
+
+	// Files do not match, so overwrite.
+
+	f1 = FS_OpenRealFile(data_path1, "rb", false);
+	if (f1 == NULL) {
+		PRVM_G_FLOAT(OFS_RETURN) = -4;
+		VM_Warning(prog, "VM_sync_file: %s could not open file %s for reading\n", prog->name, fname1);
+		return;
+	}
+
+	f2 = FS_OpenRealFile(data_path2, "wb", false);
+	if (f2 == NULL) {
+		FS_Close(f1);
+		PRVM_G_FLOAT(OFS_RETURN) = -5;
+		VM_Warning(prog, "VM_sync_file: %s could not open file %s for writing\n", prog->name, fname2);
+		return;
+	}
+
+	while ((rx = FS_Read(f1, fbuf, sizeof(fbuf)-1)) > 0) {
+		wx = FS_Write(f2, fbuf, rx);
+		if (wx != rx) {
+			FS_Close(f1);
+			FS_Close(f2);
+			PRVM_G_FLOAT(OFS_RETURN) = -6;
+			VM_Warning(prog, "VM_sync_file: %s read %I64d from %s but wrote %I64d to %s\n", prog->name, rx, fname1, wx, fname2);
+			return;
+		}
+	}
+
+	FS_Close(f1);
+	FS_Close(f2);
+
+	// Make the destination file's modification time match the source file, so syncing works next time.
+	FS_CopyMtime(game_path1, game_path2);
 }
 
 /*
