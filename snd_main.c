@@ -119,6 +119,7 @@ static const speakerlayout_t snd_speakerlayouts[] =
 	}
 };
 
+void S_SetUnderwaterIntensity(void);
 
 // =======================================================================
 // Internal sound data & structures
@@ -180,6 +181,7 @@ cvar_t snd_spatialization_prologic_frontangle = {CVAR_SAVE, "snd_spatialization_
 cvar_t snd_spatialization_occlusion = {CVAR_SAVE, "snd_spatialization_occlusion", "1", "enable occlusion testing on spatialized sounds, which simply quiets sounds that are blocked by the world; 1 enables PVS method, 2 enables LineOfSight method, 3 enables both"};
 
 // Cvars declared in snd_main.h (shared with other snd_*.c files)
+cvar_t snd_waterfx = {CVAR_SAVE, "snd_waterfx", "1", "underwater sound filter"};
 cvar_t _snd_mixahead = {CVAR_SAVE, "_snd_mixahead", "0.15", "how much sound to mix ahead of time"};
 cvar_t snd_streaming = { CVAR_SAVE, "snd_streaming", "1", "enables keeping compressed ogg sound files compressed, decompressing them only as needed, otherwise they will be decompressed completely at load (may use a lot of memory); when set to 2, streaming is performed even if this would waste memory"};
 cvar_t snd_streaming_length = { CVAR_SAVE, "snd_streaming_length", "1", "decompress sounds completely if they are less than this play time when snd_streaming is 1"};
@@ -913,6 +915,7 @@ void S_Init(void)
 	Cvar_RegisterVariable(&ambient_fade);
 	Cvar_RegisterVariable(&snd_noextraupdate);
 	Cvar_RegisterVariable(&snd_show);
+	Cvar_RegisterVariable(&snd_waterfx);
 	Cvar_RegisterVariable(&_snd_mixahead);
 	Cvar_RegisterVariable(&snd_swapstereo); // for people with backwards sound wiring
 	Cvar_RegisterVariable(&snd_channellayout);
@@ -1976,7 +1979,6 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
 	S_PlaySfxOnChannel (sfx, target_chan, CHANNELFLAG_FORCELOOP, origin, fvol, attenuation, true, 0, 0, 0, 1.0f, 0);
 }
 
-
 /*
 ===================
 S_UpdateAmbientSounds
@@ -1996,7 +1998,10 @@ static void S_UpdateAmbientSounds (void)
 	if (cl.worldmodel && cl.worldmodel->brush.AmbientSoundLevelsForPoint)
 		cl.worldmodel->brush.AmbientSoundLevelsForPoint(cl.worldmodel, listener_origin, ambientlevels, sizeof(ambientlevels));
 
+
 	// Calc ambient sound levels
+	S_SetUnderwaterIntensity();
+
 	for (ambient_channel = 0 ; ambient_channel< NUM_AMBIENTS ; ambient_channel++)
 	{
 		chan = &channels[ambient_channel];
