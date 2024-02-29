@@ -123,6 +123,7 @@ extern snd_ringbuffer_t *snd_renderbuffer;
 extern qboolean snd_threaded; // enables use of snd_usethreadedmixing, provided that no sound hacks are in effect (like timedemo)
 extern qboolean snd_usethreadedmixing; // if true, the main thread does not mix sound, soundtime does not advance, and neither does snd_renderbuffer->endframe, instead the audio thread will call S_MixToBuffer as needed
 
+extern cvar_t snd_waterfx;
 extern cvar_t _snd_mixahead;
 extern cvar_t snd_swapstereo;
 extern cvar_t snd_streaming;

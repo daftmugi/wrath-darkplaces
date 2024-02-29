@@ -1469,6 +1469,9 @@ typedef struct client_state_s
 
 	// used by EntityState5_ReadUpdate
 	skeleton_t *engineskeletonobjects;
+
+	// used by underwater sound filter (snd_waterfx)
+	qboolean view_underwater;
 }
 client_state_t;
 
