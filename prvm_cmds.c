@@ -17,6 +17,7 @@
 #include "mdfour.h"
 
 extern cvar_t prvm_backtraceforwarnings;
+extern cvar_t prvm_printwarnings;
 extern cvar_t prvm_printsyncfile;
 #ifdef USEODE
 extern dllhandle_t ode_dll;
@@ -25,6 +26,7 @@ extern dllhandle_t ode_dll;
 // LordHavoc: changed this to NOT use a return statement, so that it can be used in functions that must return a value
 void VM_Warning(prvm_prog_t *prog, const char *fmt, ...)
 {
+	if (prvm_printwarnings.integer > 0) {
 	va_list argptr;
 	char msg[MAX_INPUTLINE];
 	static double recursive = -1;
@@ -41,6 +43,7 @@ void VM_Warning(prvm_prog_t *prog, const char *fmt, ...)
 		recursive = realtime;
 		PRVM_PrintState(prog, 0);
 		recursive = -1;
+	}
 	}
 }
 
