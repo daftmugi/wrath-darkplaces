@@ -40,6 +40,8 @@ cvar_t mod_generatelightmaps_lightmapradius = {CVAR_SAVE, "mod_generatelightmaps
 cvar_t mod_generatelightmaps_vertexradius = {CVAR_SAVE, "mod_generatelightmaps_vertexradius", "16", "sampling area around each vertex"};
 cvar_t mod_generatelightmaps_gridradius = {CVAR_SAVE, "mod_generatelightmaps_gridradius", "64", "sampling area around each lightgrid cell center"};
 
+extern cvar_t print_missing_assets;
+
 dp_model_t *loadmodel;
 
 static mempool_t *mod_mempool;
@@ -518,8 +520,11 @@ dp_model_t *Mod_LoadModel(dp_model_t *mod, qboolean crash, qboolean checkdisk)
 	}
 	else if (crash)
 	{
+		if (print_missing_assets.value > 0)
+		{
 		// LordHavoc: Sys_Error was *ANNOYING*
 		Con_Printf ("Mod_LoadModel: %s not found\n", mod->name);
+		}
 	}
 
 	// no fatal errors occurred, so this model is ready to use.

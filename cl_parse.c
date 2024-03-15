@@ -199,6 +199,8 @@ cvar_t cl_nettimesyncboundmode = {CVAR_SAVE, "cl_nettimesyncboundmode", "6", "me
 cvar_t cl_nettimesyncboundtolerance = {CVAR_SAVE, "cl_nettimesyncboundtolerance", "0.25", "how much error is tolerated by bounding check, as a fraction of frametime, 0.25 = up to 25% margin of error tolerated, 1 = use only new time, 0 = use only old time (same effect as setting cl_nettimesyncfactor to 1)"};
 cvar_t cl_iplog_name = {CVAR_SAVE, "cl_iplog_name", "darkplaces_iplog.txt", "name of iplog file containing player addresses for iplog_list command and automatic ip logging when parsing status command"};
 
+cvar_t print_missing_assets = {0, "print_missing_assets", "1", "When set to 1, print asset 'not found' messages to the console"};
+
 static qboolean QW_CL_CheckOrDownloadFile(const char *filename);
 static void QW_CL_RequestNextDownload(void);
 static void QW_CL_NextUpload(void);
@@ -1357,7 +1359,12 @@ static void CL_BeginDownloads(qboolean aborteddownload)
 				if (cl.downloadmodel_current == 1)
 					Con_Printf("Map %s not found\n", cl.model_name[cl.downloadmodel_current]);
 				else
+				{
+					if (print_missing_assets.value > 0)
+					{
 					Con_Printf("Model %s not found\n", cl.model_name[cl.downloadmodel_current]);
+					}
+				}
 				// regarding the * check: don't try to download submodels
 				if (cl_serverextension_download.integer && cls.netcon && cl.model_name[cl.downloadmodel_current][0] != '*' && !sv.active)
 				{
@@ -1411,7 +1418,10 @@ static void CL_BeginDownloads(qboolean aborteddownload)
 			dpsnprintf(soundname, sizeof(soundname), "sound/%s", cl.sound_name[cl.downloadsound_current]);
 			if (!FS_FileExists(soundname) && !FS_FileExists(cl.sound_name[cl.downloadsound_current]))
 			{
+				if (print_missing_assets.value > 0)
+				{
 				Con_Printf("Sound %s not found\n", soundname);
+				}
 				if (cl_serverextension_download.integer && cls.netcon && !sv.active)
 				{
 					Cmd_ForwardStringToServer(va(vabuf, sizeof(vabuf), "download %s", soundname));
@@ -4419,6 +4429,8 @@ void CL_Parse_Init(void)
 	Cvar_RegisterVariable(&cl_nettimesyncboundtolerance);
 	Cvar_RegisterVariable(&cl_iplog_name);
 	Cvar_RegisterVariable(&cl_readpicture_force);
+
+	Cvar_RegisterVariable(&print_missing_assets);
 
 	Cmd_AddCommand("nextul", QW_CL_NextUpload, "sends next fragment of current upload buffer (screenshot for example)");
 	Cmd_AddCommand("stopul", QW_CL_StopUpload, "aborts current upload (screenshot for example)");
